@@ -1,0 +1,10 @@
+Reference websites:
+https://discussions.udacity.com/t/nan-values-not-removed-by-featureformat/179405/2
+https://discussions.udacity.com/t/final-project-order-of-pipeline-operation-with-minmaxscaler-and-svc/164802/2
+https://jaycode.github.io/enron/identifying-fraud-from-enron-email.html
+https://www.civisanalytics.com/blog/workflows-in-python-using-pipeline-and-gridsearchcv-for-more-compact-and-comprehensive-code/
+https://www.quora.com/How-do-I-properly-use-SelectKBest-GridSearchCV-and-cross-validation-in-the-sklearn-package-together
+https://discussions.udacity.com/t/different-results-by-using-gridsearchcv-vs-direct-applying-algorithm/35550/6
+https://discussions.udacity.com/t/different-accuracy-score-in-gridsearchcv/240608/6
+
+
