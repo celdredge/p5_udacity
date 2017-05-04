@@ -13,6 +13,10 @@ r = 42
 
 data_dict = pickle.load(open("final_project_dataset.pkl", "r") )
 
+data_dict.pop( "TOTAL", 0 ) # remove "TOTAL" line item
+data_dict.pop( "THE TRAVEL AGENCY IN THE PARK", 0 ) # remove "THE TRAVEL AGENCY IN THE PARK" line item
+data_dict.pop( "LOCKHART EUGENE E", 0 ) # remove "LOCKHART EUGENE E" line item
+
 feature_list = ['poi',
                'bonus',
                'salary',
@@ -178,7 +182,7 @@ steps = [
     ('my_classifier', clf)
     ]
 
-parameters = dict(select_features__k=[3,5,9,15,19,21,'all'],
+parameters = dict(select_features__k=[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,'all'],
                   my_classifier__max_features=[None, 'auto', 'log2'],
                   my_classifier__criterion=['gini', 'entropy'],
                   my_classifier__min_samples_split=[2, 3, 4, 5, 10]

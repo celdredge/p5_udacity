@@ -197,15 +197,15 @@ div#notebook {
 <p><em>Summarize for us the goal of this project and how machine learning is useful in trying to accomplish it. As part of your answer, give some background on the dataset and how it can be used to answer the project question. Were there any outliers in the data when you got it, and how did you handle those?  [relevant rubric items: “data exploration”, “outlier investigation”]</em></p>
 <hr>
 <p>The goal of this project is to use machine learning to identify likely persons of interest (POI) from the Enron corporate fraud. The analysis uses a set of emails sent to and from Enron employees along with financial information related to employee compensation. Machine learning can assist in identifying patterns in email communication and employee compensation that predict POI likely to be involved in the fraud.</p>
-<p>The dataset includes records for 146 Enron employees across 22 features. Only 18 of the 146 employees are labeled POI.</p>
-<p>Several of the features in the dataset have missing values. In particular, the following features have many missing values: deferral_payments, deferred_income, director_fees, loan_advances, and restricted_stock_deferred. Additionally, the dataset includes a “TOTAL” record that is an outlier, likely a quirk of spreadsheet formatting that should be excluded. See notes and code below for more detail.</p>
+<p>The dataset includes records for 146 Enron employees across 22 features. Only 18 of the 146 employees are labeled POI. The ratio of POIs to non-POIs in the dataset makes this project particularly challenging for machine learning. With only 18 POIs out of 146 individuals, the class imbalance means that special attention needs to be paid to classification, particularly during model evaluation and validation.</p>
+<p>Several of the features in the dataset have missing values. In particular, the following features have many missing values: deferral_payments, deferred_income, director_fees, loan_advances, and restricted_stock_deferred. Additionally, the dataset includes a “TOTAL” record that is an outlier, likely a quirk of spreadsheet formatting that should be excluded. There are also two other records identified as outliers that were excluded due to missing data and likely not being an actual Enron employee ("LOCKHART EUGENE E" and "THE TRAVEL AGENCY IN THE PARK"). See notes and code below for more detail.</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[2]:</div>
+<div class="prompt input_prompt">In&nbsp;[19]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="ch">#!/usr/bin/python</span>
@@ -247,27 +247,6 @@ div#notebook {
                <span class="p">]</span>
 
 <span class="n">data</span> <span class="o">=</span> <span class="n">featureFormat</span><span class="p">(</span><span class="n">data_dict</span><span class="p">,</span> <span class="n">feature_list</span><span class="p">)</span>
-
-<span class="kn">import</span> <span class="nn">pprint</span>
-<span class="n">pp</span> <span class="o">=</span> <span class="n">pprint</span><span class="o">.</span><span class="n">PrettyPrinter</span><span class="p">(</span><span class="n">depth</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
-
-<span class="kn">import</span> <span class="nn">copy</span>
-<span class="n">my_dataset</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">data_dict</span><span class="p">)</span>
-<span class="n">my_feature_list</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">feature_list</span><span class="p">)</span>
-
-<span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">my_dataset</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-    <span class="n">my_dataset</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s1">&#39;ratio_to_poi_to_all_sent&#39;</span><span class="p">]</span>  <span class="o">=</span> <span class="mi">0</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">my_dataset</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s1">&#39;from_poi_to_this_person&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;NaN&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">my_dataset</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s1">&#39;from_messages&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;NaN&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">my_dataset</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s1">&#39;from_messages&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">):</span>
-        <span class="n">my_dataset</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s1">&#39;ratio_to_poi_to_all_sent&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">my_dataset</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s1">&#39;from_this_person_to_poi&#39;</span><span class="p">])</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="n">my_dataset</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s1">&#39;from_messages&#39;</span><span class="p">])</span>
-
-    <span class="n">my_dataset</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s1">&#39;ratio_from_poi_to_all_received&#39;</span><span class="p">]</span>  <span class="o">=</span> <span class="mi">0</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">my_dataset</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s1">&#39;from_this_person_to_poi&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;NaN&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">my_dataset</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s1">&#39;to_messages&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;NaN&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">my_dataset</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s1">&#39;to_messages&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">):</span>
-        <span class="n">my_dataset</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s1">&#39;ratio_from_poi_to_all_received&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">my_dataset</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s1">&#39;from_poi_to_this_person&#39;</span><span class="p">])</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="n">my_dataset</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s1">&#39;to_messages&#39;</span><span class="p">])</span>
-
-
-<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;ratio_to_poi_to_all_sent&#39;</span><span class="p">,</span><span class="s1">&#39;ratio_from_poi_to_all_received&#39;</span><span class="p">]:</span>
-    <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">my_feature_list</span><span class="p">:</span>
-        <span class="n">my_feature_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
 </pre></div>
 
 </div>
@@ -277,7 +256,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[3]:</div>
+<div class="prompt input_prompt">In&nbsp;[20]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
@@ -306,7 +285,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[4]:</div>
+<div class="prompt input_prompt">In&nbsp;[21]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
@@ -320,7 +299,7 @@ div#notebook {
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[4]:</div>
+<div class="output_area"><div class="prompt output_prompt">Out[21]:</div>
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 <div>
@@ -356,127 +335,127 @@ div#notebook {
     <tr>
       <th>0</th>
       <td>ALLEN PHILLIP K</td>
-      <td>4175000.0</td>
-      <td>2869717.0</td>
-      <td>-3081055.0</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>1729541.0</td>
-      <td>13868.0</td>
-      <td>2195.0</td>
-      <td>47.0</td>
-      <td>65.0</td>
-      <td>NaN</td>
-      <td>304805.0</td>
-      <td>152.0</td>
-      <td>0.0</td>
-      <td>126027.0</td>
-      <td>-126027.0</td>
-      <td>201955.0</td>
-      <td>1407.0</td>
-      <td>2902.0</td>
-      <td>4484442.0</td>
-      <td>1729541.0</td>
+      <td>4175000.00</td>
+      <td>2869717.00</td>
+      <td>-3081055.00</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>1729541.00</td>
+      <td>13868.00</td>
+      <td>2195.00</td>
+      <td>47.00</td>
+      <td>65.00</td>
+      <td>nan</td>
+      <td>304805.00</td>
+      <td>152.00</td>
+      <td>0.00</td>
+      <td>126027.00</td>
+      <td>-126027.00</td>
+      <td>201955.00</td>
+      <td>1407.00</td>
+      <td>2902.00</td>
+      <td>4484442.00</td>
+      <td>1729541.00</td>
     </tr>
     <tr>
       <th>1</th>
       <td>BADUM JAMES P</td>
-      <td>NaN</td>
-      <td>178980.0</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>257817.0</td>
-      <td>3486.0</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>0.0</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>182466.0</td>
-      <td>257817.0</td>
+      <td>nan</td>
+      <td>178980.00</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>257817.00</td>
+      <td>3486.00</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>0.00</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>182466.00</td>
+      <td>257817.00</td>
     </tr>
     <tr>
       <th>2</th>
       <td>BANNANTINE JAMES M</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>-5104.0</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>4046157.0</td>
-      <td>56301.0</td>
-      <td>29.0</td>
-      <td>39.0</td>
-      <td>0.0</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>864523.0</td>
-      <td>0.0</td>
-      <td>1757552.0</td>
-      <td>-560222.0</td>
-      <td>477.0</td>
-      <td>465.0</td>
-      <td>566.0</td>
-      <td>916197.0</td>
-      <td>5243487.0</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>-5104.00</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>4046157.00</td>
+      <td>56301.00</td>
+      <td>29.00</td>
+      <td>39.00</td>
+      <td>0.00</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>864523.00</td>
+      <td>0.00</td>
+      <td>1757552.00</td>
+      <td>-560222.00</td>
+      <td>477.00</td>
+      <td>465.00</td>
+      <td>566.00</td>
+      <td>916197.00</td>
+      <td>5243487.00</td>
     </tr>
     <tr>
       <th>3</th>
       <td>BAXTER JOHN C</td>
-      <td>1200000.0</td>
-      <td>1295738.0</td>
-      <td>-1386055.0</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>6680544.0</td>
-      <td>11200.0</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>1586055.0</td>
-      <td>2660303.0</td>
-      <td>0.0</td>
-      <td>3942714.0</td>
-      <td>NaN</td>
-      <td>267102.0</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>5634343.0</td>
-      <td>10623258.0</td>
+      <td>1200000.00</td>
+      <td>1295738.00</td>
+      <td>-1386055.00</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>6680544.00</td>
+      <td>11200.00</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>1586055.00</td>
+      <td>2660303.00</td>
+      <td>0.00</td>
+      <td>3942714.00</td>
+      <td>nan</td>
+      <td>267102.00</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>5634343.00</td>
+      <td>10623258.00</td>
     </tr>
     <tr>
       <th>4</th>
       <td>BAY FRANKLIN R</td>
-      <td>400000.0</td>
-      <td>260455.0</td>
-      <td>-201641.0</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>129142.0</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>69.0</td>
-      <td>0.0</td>
-      <td>145796.0</td>
-      <td>-82782.0</td>
-      <td>239671.0</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>827696.0</td>
-      <td>63014.0</td>
+      <td>400000.00</td>
+      <td>260455.00</td>
+      <td>-201641.00</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>129142.00</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>69.00</td>
+      <td>0.00</td>
+      <td>145796.00</td>
+      <td>-82782.00</td>
+      <td>239671.00</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>827696.00</td>
+      <td>63014.00</td>
     </tr>
   </tbody>
 </table>
@@ -491,7 +470,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[5]:</div>
+<div class="prompt input_prompt">In&nbsp;[22]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="k">print</span> <span class="s2">&quot;number of features: &quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
@@ -522,17 +501,17 @@ div#notebook {
 <pre>number of features:  22
 
 
-       len
-poi       
-0.0  128.0
-1.0  18.0 
+        len
+poi        
+0.00 128.00
+1.00 18.00 
 
 
 </pre>
 </div>
 </div>
 
-<div class="output_area"><div class="prompt output_prompt">Out[5]:</div>
+<div class="output_area"><div class="prompt output_prompt">Out[22]:</div>
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 <div>
@@ -585,7 +564,7 @@ poi
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[6]:</div>
+<div class="prompt input_prompt">In&nbsp;[23]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span>
@@ -601,7 +580,7 @@ poi
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[6]:</div>
+<div class="output_area"><div class="prompt output_prompt">Out[23]:</div>
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 <div>
@@ -890,7 +869,7 @@ poi
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[7]:</div>
+<div class="prompt input_prompt">In&nbsp;[24]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="o">%</span><span class="k">pylab</span> inline
@@ -2584,7 +2563,7 @@ AAAAAElFTkSuQmCC
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[8]:</div>
+<div class="prompt input_prompt">In&nbsp;[25]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="k">def</span> <span class="nf">top_ten_records</span><span class="p">(</span><span class="n">feature</span><span class="p">):</span>
@@ -2610,7 +2589,7 @@ AAAAAElFTkSuQmCC
 </div>
 </div>
 
-<div class="output_area"><div class="prompt output_prompt">Out[8]:</div>
+<div class="output_area"><div class="prompt output_prompt">Out[25]:</div>
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 <div>
@@ -2697,7 +2676,7 @@ AAAAAElFTkSuQmCC
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[9]:</div>
+<div class="prompt input_prompt">In&nbsp;[26]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="n">top_ten_records</span><span class="p">(</span><span class="s1">&#39;salary&#39;</span><span class="p">)</span>
@@ -2718,7 +2697,7 @@ AAAAAElFTkSuQmCC
 </div>
 </div>
 
-<div class="output_area"><div class="prompt output_prompt">Out[9]:</div>
+<div class="output_area"><div class="prompt output_prompt">Out[26]:</div>
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 <div>
@@ -2808,19 +2787,199 @@ AAAAAElFTkSuQmCC
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Printing the top 10 records shows a  record for "TOTAL" included in the dataset. This looks like a quirk of the dataset, not an actual record, so let's reload the dateset with the "TOTAL" line item removed.</p>
+<p>Also, do any records have NULL or missing values?</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[10]:</div>
+<div class="prompt input_prompt">In&nbsp;[27]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">df</span><span class="p">[(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;bonus&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isnull</span><span class="p">())</span> 
+   <span class="o">&amp;</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;deferral_payments&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isnull</span><span class="p">())</span> 
+   <span class="o">&amp;</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;deferred_income&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isnull</span><span class="p">())</span>
+   <span class="o">&amp;</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;director_fees&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isnull</span><span class="p">())</span>
+   <span class="o">&amp;</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;email_address&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isnull</span><span class="p">())</span>
+   <span class="o">&amp;</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;exercised_stock_options&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isnull</span><span class="p">())</span>
+   <span class="o">&amp;</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;expenses&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isnull</span><span class="p">())</span>
+   <span class="o">&amp;</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;from_messages&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isnull</span><span class="p">())</span>
+  <span class="p">]</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt output_prompt">Out[27]:</div>
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>name</th>
+      <th>bonus</th>
+      <th>deferral_payments</th>
+      <th>deferred_income</th>
+      <th>director_fees</th>
+      <th>email_address</th>
+      <th>exercised_stock_options</th>
+      <th>expenses</th>
+      <th>from_messages</th>
+      <th>from_poi_to_this_person</th>
+      <th>from_this_person_to_poi</th>
+      <th>loan_advances</th>
+      <th>long_term_incentive</th>
+      <th>other</th>
+      <th>poi</th>
+      <th>restricted_stock</th>
+      <th>restricted_stock_deferred</th>
+      <th>salary</th>
+      <th>shared_receipt_with_poi</th>
+      <th>to_messages</th>
+      <th>total_payments</th>
+      <th>total_stock_value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>25</th>
+      <td>CLINE KENNETH W</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>0.00</td>
+      <td>662086.00</td>
+      <td>-472568.00</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>189518.00</td>
+    </tr>
+    <tr>
+      <th>84</th>
+      <td>LOCKHART EUGENE E</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>0.00</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+    </tr>
+    <tr>
+      <th>127</th>
+      <td>THE TRAVEL AGENCY IN THE PARK</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>362096.00</td>
+      <td>0.00</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>362096.00</td>
+      <td>nan</td>
+    </tr>
+    <tr>
+      <th>142</th>
+      <td>WODRASKA JOHN</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>189583.00</td>
+      <td>0.00</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>nan</td>
+      <td>189583.00</td>
+      <td>nan</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Printing the top 10 records shows a  record for "TOTAL" included in the dataset. This looks like a quirk of the dataset, not an actual record, so let's reload the dataset with the "TOTAL" line item removed. Looking at records with missing values, it appears that "THE TRAVEL AGENCY IN THE PARK" is not an actual person, and "LOCKHART EUGENE E" has no values associated. Let's also exclude both of these records.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[28]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="n">data_dict</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="s2">&quot;final_project_dataset.pkl&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="p">)</span>
 
 <span class="n">data_dict</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span> <span class="s2">&quot;TOTAL&quot;</span><span class="p">,</span> <span class="mi">0</span> <span class="p">)</span> <span class="c1"># remove &quot;TOTAL&quot; line item</span>
+<span class="n">data_dict</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span> <span class="s2">&quot;THE TRAVEL AGENCY IN THE PARK&quot;</span><span class="p">,</span> <span class="mi">0</span> <span class="p">)</span> <span class="c1"># remove &quot;THE TRAVEL AGENCY IN THE PARK&quot; line item</span>
+<span class="n">data_dict</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span> <span class="s2">&quot;LOCKHART EUGENE E&quot;</span><span class="p">,</span> <span class="mi">0</span> <span class="p">)</span> <span class="c1"># remove &quot;LOCKHART EUGENE E&quot; line item</span>
 
 <span class="n">feature_list</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;poi&#39;</span><span class="p">,</span>
                <span class="s1">&#39;bonus&#39;</span><span class="p">,</span>
@@ -2857,7 +3016,7 @@ AAAAAElFTkSuQmCC
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[11]:</div>
+<div class="prompt input_prompt">In&nbsp;[29]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="n">top_ten_records</span><span class="p">(</span><span class="s1">&#39;salary&#39;</span><span class="p">)</span>
@@ -2878,7 +3037,7 @@ AAAAAElFTkSuQmCC
 </div>
 </div>
 
-<div class="output_area"><div class="prompt output_prompt">Out[11]:</div>
+<div class="output_area"><div class="prompt output_prompt">Out[29]:</div>
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 <div>
@@ -2893,7 +3052,7 @@ AAAAAElFTkSuQmCC
   </thead>
   <tbody>
     <tr>
-      <th>122</th>
+      <th>121</th>
       <td>SKILLING JEFFREY K</td>
       <td>1.00</td>
       <td>1111258.00</td>
@@ -2911,13 +3070,13 @@ AAAAAElFTkSuQmCC
       <td>1060932.00</td>
     </tr>
     <tr>
-      <th>105</th>
+      <th>104</th>
       <td>PICKERING MARK R</td>
       <td>0.00</td>
       <td>655037.00</td>
     </tr>
     <tr>
-      <th>138</th>
+      <th>136</th>
       <td>WHALLEY LAWRENCE G</td>
       <td>0.00</td>
       <td>510364.00</td>
@@ -2935,13 +3094,13 @@ AAAAAElFTkSuQmCC
       <td>440698.00</td>
     </tr>
     <tr>
-      <th>121</th>
+      <th>120</th>
       <td>SHERRIFF JOHN R</td>
       <td>0.00</td>
       <td>428780.00</td>
     </tr>
     <tr>
-      <th>112</th>
+      <th>111</th>
       <td>RICE KENNETH D</td>
       <td>1.00</td>
       <td>420636.00</td>
@@ -2965,7 +3124,7 @@ AAAAAElFTkSuQmCC
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[12]:</div>
+<div class="prompt input_prompt">In&nbsp;[30]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="n">top_ten_records</span><span class="p">(</span><span class="s1">&#39;bonus&#39;</span><span class="p">)</span>
@@ -2986,7 +3145,7 @@ AAAAAElFTkSuQmCC
 </div>
 </div>
 
-<div class="output_area"><div class="prompt output_prompt">Out[12]:</div>
+<div class="output_area"><div class="prompt output_prompt">Out[30]:</div>
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 <div>
@@ -3013,7 +3172,7 @@ AAAAAElFTkSuQmCC
       <td>7000000.00</td>
     </tr>
     <tr>
-      <th>122</th>
+      <th>121</th>
       <td>SKILLING JEFFREY K</td>
       <td>1.00</td>
       <td>5600000.00</td>
@@ -3043,13 +3202,13 @@ AAAAAElFTkSuQmCC
       <td>3000000.00</td>
     </tr>
     <tr>
-      <th>138</th>
+      <th>136</th>
       <td>WHALLEY LAWRENCE G</td>
       <td>0.00</td>
       <td>3000000.00</td>
     </tr>
     <tr>
-      <th>91</th>
+      <th>90</th>
       <td>MCMAHON JEFFREY</td>
       <td>0.00</td>
       <td>2600000.00</td>
@@ -3073,7 +3232,7 @@ AAAAAElFTkSuQmCC
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[13]:</div>
+<div class="prompt input_prompt">In&nbsp;[31]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="n">top_ten_records</span><span class="p">(</span><span class="s1">&#39;exercised_stock_options&#39;</span><span class="p">)</span>
@@ -3094,7 +3253,7 @@ AAAAAElFTkSuQmCC
 </div>
 </div>
 
-<div class="output_area"><div class="prompt output_prompt">Out[13]:</div>
+<div class="output_area"><div class="prompt output_prompt">Out[31]:</div>
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 <div>
@@ -3121,19 +3280,19 @@ AAAAAElFTkSuQmCC
       <td>30766064.00</td>
     </tr>
     <tr>
-      <th>112</th>
+      <th>111</th>
       <td>RICE KENNETH D</td>
       <td>1.00</td>
       <td>19794175.00</td>
     </tr>
     <tr>
-      <th>122</th>
+      <th>121</th>
       <td>SKILLING JEFFREY K</td>
       <td>1.00</td>
       <td>19250000.00</td>
     </tr>
     <tr>
-      <th>103</th>
+      <th>102</th>
       <td>PAI LOU L</td>
       <td>0.00</td>
       <td>15364167.00</td>
@@ -3151,7 +3310,7 @@ AAAAAElFTkSuQmCC
       <td>8831913.00</td>
     </tr>
     <tr>
-      <th>143</th>
+      <th>141</th>
       <td>YEAGER F SCOTT</td>
       <td>1.00</td>
       <td>8308552.00</td>
@@ -3163,7 +3322,7 @@ AAAAAElFTkSuQmCC
       <td>8191755.00</td>
     </tr>
     <tr>
-      <th>110</th>
+      <th>109</th>
       <td>REDMOND BRIAN L</td>
       <td>0.00</td>
       <td>7509039.00</td>
@@ -3205,7 +3364,8 @@ AAAAAElFTkSuQmCC
 <div class="text_cell_render border-box-sizing rendered_html">
 <p><em>What features did you end up using in your POI identifier, and what selection process did you use to pick them? Did you have to do any scaling? Why or why not? As part of the assignment, you should attempt to engineer your own feature that does not come ready-made in the dataset -- explain what feature you tried to make, and the rationale behind it. (You do not necessarily have to use it in the final analysis, only engineer and test it.) In your feature selection step, if you used an algorithm like a decision tree, please also give the feature importances of the features that you use, and if you used an automated feature selection function like SelectKBest, please report the feature scores and reasons for your choice of parameter values.  [relevant rubric items: “create new features”, “properly scale features”, “intelligently select feature”]</em></p>
 <hr>
-<p>The top performing classifier, the DecisionTreeClassifier, used the top 19 features, identified by the automated selection function SelectKBest (see below for scores). Included among the top features are two engineered features. The first is, "ratio_to_poi_to_all_sent," and is defined as the number of messages the person sent to a POI divided by the total number of messages sent by that person. The second is, "ratio_from_poi_to_all_received," and is defined as the number of messages received from a POI divided by the total number of messages recieved by that person. The intent of these additional features is to provide additional detail on how the person communicated with POIs, regardless of how often the person uses email. Even if an employee sends only a few emails to a POI, if that is a high proportion of the total emails that person sent, it may be meaningful.</p>
+<p>As part of the pipeline for each classifier, different values for k in the automated feature selection function SelectKBest  were tested and performance was compared. The top performing classifier, the DecisionTreeClassifier, used the top 19 features identified by SelectKBest (see below for scores). Note that the scores discussed below are only intended to demonstrate the SelectKBest function. The actual feature selection takes place as part of the grid search for tuning the parameters of each classifier.</p>
+<p>Included among the top features are two engineered features. The first is, "ratio_to_poi_to_all_sent," and is defined as the number of messages the person sent to a POI divided by the total number of messages sent by that person. The second is, "ratio_from_poi_to_all_received," and is defined as the number of messages received from a POI divided by the total number of messages recieved by that person. The intent of these additional features is to provide additional detail on how the person communicated with POIs, regardless of how often the person uses email. Even if an employee sends only a few emails to a POI, if that is a high proportion of the total emails that person sent, it may be meaningful.</p>
 <p>When evaluating classifiers, I used the pipeline and grid search features of scikit-learn to scale features using the MinMaxScaler, select features, and classifier parameters. I generally tried a range of values for each parameter, but did not every parameter due to long run times. I also investigated feature importances from the decision tree classifier.</p>
 
 </div>
@@ -3213,7 +3373,7 @@ AAAAAElFTkSuQmCC
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[26]:</div>
+<div class="prompt input_prompt">In&nbsp;[32]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.feature_selection</span> <span class="kn">import</span> <span class="n">SelectKBest</span>
@@ -3252,34 +3412,34 @@ AAAAAElFTkSuQmCC
 <div class="output_area"><div class="prompt"></div>
 <div class="output_subarea output_stream output_stdout output_text">
 <pre>                         score
-exercised_stock_options 25.10 
-total_stock_value       24.47 
-bonus                   21.06 
-salary                  18.58 
-deferred_income         11.60 
-long_term_incentive     10.07 
-restricted_stock        9.35  
-total_payments          8.87  
-shared_receipt_with_poi 8.75  
-loan_advances           7.24  
+exercised_stock_options 24.82 
+total_stock_value       24.18 
+bonus                   20.79 
+salary                  18.29 
+deferred_income         11.46 
+long_term_incentive     9.92  
+restricted_stock        9.21  
+total_payments          8.77  
+shared_receipt_with_poi 8.59  
+loan_advances           7.18  
 </pre>
 </div>
 </div>
 
-<div class="output_area"><div class="prompt output_prompt">Out[26]:</div>
+<div class="output_area"><div class="prompt output_prompt">Out[32]:</div>
 
 
 <div class="output_text output_subarea output_execute_result">
-<pre>{&apos;bonus&apos;: 21.060001707536571,
- &apos;deferred_income&apos;: 11.595547659730601,
- &apos;exercised_stock_options&apos;: 25.097541528735491,
- &apos;loan_advances&apos;: 7.2427303965360181,
- &apos;long_term_incentive&apos;: 10.072454529369441,
- &apos;restricted_stock&apos;: 9.3467007910514877,
- &apos;salary&apos;: 18.575703268041785,
- &apos;shared_receipt_with_poi&apos;: 8.7464855321290802,
- &apos;total_payments&apos;: 8.8667215371077752,
- &apos;total_stock_value&apos;: 24.467654047526398}</pre>
+<pre>{&apos;bonus&apos;: 20.792252047181535,
+ &apos;deferred_income&apos;: 11.458476579280369,
+ &apos;exercised_stock_options&apos;: 24.815079733218194,
+ &apos;loan_advances&apos;: 7.1840556582887247,
+ &apos;long_term_incentive&apos;: 9.9221860131898225,
+ &apos;restricted_stock&apos;: 9.2128106219771002,
+ &apos;salary&apos;: 18.289684043404513,
+ &apos;shared_receipt_with_poi&apos;: 8.589420731682381,
+ &apos;total_payments&apos;: 8.7727777300916792,
+ &apos;total_stock_value&apos;: 24.182898678566879}</pre>
 </div>
 
 </div>
@@ -3300,7 +3460,7 @@ loan_advances           7.24
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[36]:</div>
+<div class="prompt input_prompt">In&nbsp;[33]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="kn">import</span> <span class="nn">pprint</span>
@@ -3344,49 +3504,49 @@ loan_advances           7.24
 <div class="output_subarea output_stream output_stdout output_text">
 <pre>Top 10 features from data_dict:
                          score
-exercised_stock_options 25.10 
-total_stock_value       24.47 
-bonus                   21.06 
-salary                  18.58 
-deferred_income         11.60 
-long_term_incentive     10.07 
-restricted_stock        9.35  
-total_payments          8.87  
-shared_receipt_with_poi 8.75  
-loan_advances           7.24  
+exercised_stock_options 24.82 
+total_stock_value       24.18 
+bonus                   20.79 
+salary                  18.29 
+deferred_income         11.46 
+long_term_incentive     9.92  
+restricted_stock        9.21  
+total_payments          8.77  
+shared_receipt_with_poi 8.59  
+loan_advances           7.18  
 
 
 
 Top 10 features from my_dataset:
                           score
-exercised_stock_options  25.10 
-total_stock_value        24.47 
-bonus                    21.06 
-salary                   18.58 
-ratio_to_poi_to_all_sent 16.64 
-deferred_income          11.60 
-long_term_incentive      10.07 
-restricted_stock         9.35  
-total_payments           8.87  
-shared_receipt_with_poi  8.75  
+exercised_stock_options  24.82 
+total_stock_value        24.18 
+bonus                    20.79 
+salary                   18.29 
+ratio_to_poi_to_all_sent 16.41 
+deferred_income          11.46 
+long_term_incentive      9.92  
+restricted_stock         9.21  
+total_payments           8.77  
+shared_receipt_with_poi  8.59  
 </pre>
 </div>
 </div>
 
-<div class="output_area"><div class="prompt output_prompt">Out[36]:</div>
+<div class="output_area"><div class="prompt output_prompt">Out[33]:</div>
 
 
 <div class="output_text output_subarea output_execute_result">
-<pre>{&apos;bonus&apos;: 21.060001707536571,
- &apos;deferred_income&apos;: 11.595547659730601,
- &apos;exercised_stock_options&apos;: 25.097541528735491,
- &apos;long_term_incentive&apos;: 10.072454529369441,
- &apos;ratio_to_poi_to_all_sent&apos;: 16.641707070469014,
- &apos;restricted_stock&apos;: 9.3467007910514877,
- &apos;salary&apos;: 18.575703268041785,
- &apos;shared_receipt_with_poi&apos;: 8.7464855321290802,
- &apos;total_payments&apos;: 8.8667215371077752,
- &apos;total_stock_value&apos;: 24.467654047526398}</pre>
+<pre>{&apos;bonus&apos;: 20.792252047181535,
+ &apos;deferred_income&apos;: 11.458476579280369,
+ &apos;exercised_stock_options&apos;: 24.815079733218194,
+ &apos;long_term_incentive&apos;: 9.9221860131898225,
+ &apos;ratio_to_poi_to_all_sent&apos;: 16.409712548035788,
+ &apos;restricted_stock&apos;: 9.2128106219771002,
+ &apos;salary&apos;: 18.289684043404513,
+ &apos;shared_receipt_with_poi&apos;: 8.589420731682381,
+ &apos;total_payments&apos;: 8.7727777300916792,
+ &apos;total_stock_value&apos;: 24.182898678566879}</pre>
 </div>
 
 </div>
@@ -3397,7 +3557,7 @@ shared_receipt_with_poi  8.75
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[37]:</div>
+<div class="prompt input_prompt">In&nbsp;[34]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="k">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
@@ -3420,52 +3580,52 @@ shared_receipt_with_poi  8.75
 
 Top 19 features from my_dataset:
                                 score
-exercised_stock_options        25.10 
-total_stock_value              24.47 
-bonus                          21.06 
-salary                         18.58 
-ratio_to_poi_to_all_sent       16.64 
-deferred_income                11.60 
-long_term_incentive            10.07 
-restricted_stock               9.35  
-total_payments                 8.87  
-shared_receipt_with_poi        8.75  
-loan_advances                  7.24  
-expenses                       6.23  
-from_poi_to_this_person        5.34  
-other                          4.20  
-ratio_from_poi_to_all_received 3.21  
-from_this_person_to_poi        2.43  
-director_fees                  2.11  
-to_messages                    1.70  
+exercised_stock_options        24.82 
+total_stock_value              24.18 
+bonus                          20.79 
+salary                         18.29 
+ratio_to_poi_to_all_sent       16.41 
+deferred_income                11.46 
+long_term_incentive            9.92  
+restricted_stock               9.21  
+total_payments                 8.77  
+shared_receipt_with_poi        8.59  
+loan_advances                  7.18  
+expenses                       6.09  
+from_poi_to_this_person        5.24  
+other                          4.19  
+ratio_from_poi_to_all_received 3.13  
+from_this_person_to_poi        2.38  
+director_fees                  2.13  
+to_messages                    1.65  
 deferral_payments              0.22  
 </pre>
 </div>
 </div>
 
-<div class="output_area"><div class="prompt output_prompt">Out[37]:</div>
+<div class="output_area"><div class="prompt output_prompt">Out[34]:</div>
 
 
 <div class="output_text output_subarea output_execute_result">
-<pre>{&apos;bonus&apos;: 21.060001707536571,
- &apos;deferral_payments&apos;: 0.2170589303395084,
- &apos;deferred_income&apos;: 11.595547659730601,
- &apos;director_fees&apos;: 2.1076559432760908,
- &apos;exercised_stock_options&apos;: 25.097541528735491,
- &apos;expenses&apos;: 6.2342011405067401,
- &apos;from_poi_to_this_person&apos;: 5.3449415231473374,
- &apos;from_this_person_to_poi&apos;: 2.4265081272428781,
- &apos;loan_advances&apos;: 7.2427303965360181,
- &apos;long_term_incentive&apos;: 10.072454529369441,
- &apos;other&apos;: 4.204970858301416,
- &apos;ratio_from_poi_to_all_received&apos;: 3.2107619169667627,
- &apos;ratio_to_poi_to_all_sent&apos;: 16.641707070469014,
- &apos;restricted_stock&apos;: 9.3467007910514877,
- &apos;salary&apos;: 18.575703268041785,
- &apos;shared_receipt_with_poi&apos;: 8.7464855321290802,
- &apos;to_messages&apos;: 1.6988243485808501,
- &apos;total_payments&apos;: 8.8667215371077752,
- &apos;total_stock_value&apos;: 24.467654047526398}</pre>
+<pre>{&apos;bonus&apos;: 20.792252047181535,
+ &apos;deferral_payments&apos;: 0.22461127473600989,
+ &apos;deferred_income&apos;: 11.458476579280369,
+ &apos;director_fees&apos;: 2.1263278020077054,
+ &apos;exercised_stock_options&apos;: 24.815079733218194,
+ &apos;expenses&apos;: 6.0941733106389453,
+ &apos;from_poi_to_this_person&apos;: 5.2434497133749582,
+ &apos;from_this_person_to_poi&apos;: 2.3826121082276739,
+ &apos;loan_advances&apos;: 7.1840556582887247,
+ &apos;long_term_incentive&apos;: 9.9221860131898225,
+ &apos;other&apos;: 4.1874775069953749,
+ &apos;ratio_from_poi_to_all_received&apos;: 3.1280917481567263,
+ &apos;ratio_to_poi_to_all_sent&apos;: 16.409712548035788,
+ &apos;restricted_stock&apos;: 9.2128106219771002,
+ &apos;salary&apos;: 18.289684043404513,
+ &apos;shared_receipt_with_poi&apos;: 8.589420731682381,
+ &apos;to_messages&apos;: 1.6463411294420076,
+ &apos;total_payments&apos;: 8.7727777300916792,
+ &apos;total_stock_value&apos;: 24.182898678566879}</pre>
 </div>
 
 </div>
@@ -3489,7 +3649,7 @@ deferral_payments              0.22
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p><em>What algorithm did you end up using? What other one(s) did you try? How did model performance differ between algorithms?  [relevant rubric item: “pick an algorithm”]</em></p>
-<p>I ended up using the Decision Tree classifier, due to best performance, Precision: 0.42961    Recall: 0.35400</p>
+<p>I ended up using the Decision Tree classifier, due to best performance, Precision: 0.38272    Recall: 0.38100</p>
 <p>I also tried:</p>
 <ul>
 <li>Gaussian Naive Bayes - Precision: 0.19280    Recall: 0.78950</li>
@@ -3497,7 +3657,7 @@ deferral_payments              0.22
 <li>Random Forest - Precision: 0.36733    Recall: 0.25750</li>
 </ul>
 <p><em>What does it mean to tune the parameters of an algorithm, and what can happen if you don’t do this well?  How did you tune the parameters of your particular algorithm? (Some algorithms do not have parameters that you need to tune -- if this is the case for the one you picked, identify and briefly explain how you would have done it for the model that was not your final choice or a different model that does utilize parameter tuning, e.g. a decision tree classifier).  [relevant rubric item: “tune the algorithm”]</em></p>
-<p>Tuning the parameters means adjusting the parameter arguments for the dataset and use case. If you don't do this well, the classifier can have poor performance during cross validation. I used the grid search feature in scikit-learn to comprehensively compare a variety of parameter settings.</p>
+<p>Tuning the parameters means adjusting the parameter arguments for the dataset and use case. If you don't do this well, the classifier can have poor performance during cross validation and fail to predict any unseen data. Cross-validation is used to tune the parameters of the classifiers. If we tuned parameters only using training data, the model would overfit. I used the grid search feature in scikit-learn to comprehensively compare a variety of parameter settings.</p>
 <p>For example, for the Decision Tree classifier that ended up with the best performance, I varied the following attributes to see which yielded the highest F1 score:</p>
 <ul>
 <li>max_features: None, 'auto', 'log2'</li>
@@ -3506,14 +3666,14 @@ deferral_payments              0.22
 </ul>
 <p>The grid search function tested all combinations of these parameters, and discovered that the following had the highest performance. These settings were then used in the final classifier.</p>
 <ul>
-<li>max_features: None</li>
-<li>criterion: 'entropy'</li>
-<li>min_samples_split: 10</li>
+<li>max_features: 'auto'</li>
+<li>criterion: 'gini'</li>
+<li>min_samples_split: 2</li>
 </ul>
 <p><em>What is validation, and what’s a classic mistake you can make if you do it wrong? How did you validate your analysis?  [relevant rubric item: “validation strategy”]</em></p>
-<p>Validation involves randomly splitting the dataset into separate training and testing groups. The model is trained on the training dataset, and then performance is evaluated on the test dataset. This process helps validate the performance on an independent dataset and guards against overfitting. For this analysis, due to the low number of POI, I used the statified shuffle split function in conjunction with grid search in scikit-learn for cross validation over 1000 folds.</p>
+<p>Validation involves randomly splitting the dataset into separate training and testing groups. The model is trained on the training dataset, and then performance is evaluated on the test dataset. This process helps validate the performance on an independent dataset and guards against overfitting. For this analysis, due to the low number of POI, I used the statified shuffle split function in conjunction with grid search in scikit-learn for cross validation over 1000 folds. I also used the test_classifier method from the tester script provided, which also performs stratified cross-valudation evaluation.</p>
 <p><em>Give at least 2 evaluation metrics and your average performance for each of them.  Explain an interpretation of your metrics that says something human-understandable about your algorithm’s performance. [relevant rubric item: “usage of evaluation metrics”]</em></p>
-<p>Two metrics that measure model performance are precision and recall. Precision measures the ratio of true positives to the total true positive and false positives. In other words, correctly identifying POI provided that the person is actually a POI. Recall measues the ratio of true positives to the total true positives and false negatives. In other words, the chances that the algorithm predicts a POI when in fact the person is a POI. The highest performing decision tree classifier has precision of 0.42961 (i.e. about 43 percent of the actual POI are predicted to be POI by the algorithm). Recall for the classifier is 0.35400 (i.e. about 35 percent of the time a person predicted to be POI actually is)</p>
+<p>Two metrics that measure model performance are precision and recall. Precision measures the ratio of true positives to the total true positive and false positives. In other words, correctly identifying POI provided that the person is actually a POI. Recall measues the ratio of true positives to the total true positives and false negatives. In other words, the chances that the algorithm predicts a POI when in fact the person is a POI. The highest performing decision tree classifier has precision of 0.38272 (i.e. about 38.3 percent of the actual POI are predicted to be POI by the algorithm). Recall for the classifier is 0.38100 (i.e. about 38.1 percent of the time a person predicted to be POI actually is)</p>
 
 </div>
 </div>
@@ -3779,7 +3939,7 @@ Pipeline(steps=[(&apos;scale&apos;, MinMaxScaler(copy=True, feature_range=(0, 1)
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[42]:</div>
+<div class="prompt input_prompt">In&nbsp;[35]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="c1">## DecisionTreeClassifier</span>
@@ -3806,7 +3966,7 @@ Pipeline(steps=[(&apos;scale&apos;, MinMaxScaler(copy=True, feature_range=(0, 1)
     <span class="p">(</span><span class="s1">&#39;my_classifier&#39;</span><span class="p">,</span> <span class="n">clf</span><span class="p">)</span>
     <span class="p">]</span>
 
-<span class="n">parameters</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">select_features__k</span><span class="o">=</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">9</span><span class="p">,</span><span class="mi">15</span><span class="p">,</span><span class="mi">19</span><span class="p">,</span><span class="mi">21</span><span class="p">,</span><span class="s1">&#39;all&#39;</span><span class="p">],</span>
+<span class="n">parameters</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">select_features__k</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">7</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="mi">9</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">11</span><span class="p">,</span><span class="mi">12</span><span class="p">,</span><span class="mi">13</span><span class="p">,</span><span class="mi">14</span><span class="p">,</span><span class="mi">15</span><span class="p">,</span><span class="mi">16</span><span class="p">,</span><span class="mi">17</span><span class="p">,</span><span class="mi">18</span><span class="p">,</span><span class="mi">19</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="mi">21</span><span class="p">,</span><span class="s1">&#39;all&#39;</span><span class="p">],</span>
                   <span class="n">my_classifier__max_features</span><span class="o">=</span><span class="p">[</span><span class="bp">None</span><span class="p">,</span> <span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="s1">&#39;log2&#39;</span><span class="p">],</span>
                   <span class="n">my_classifier__criterion</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;gini&#39;</span><span class="p">,</span> <span class="s1">&#39;entropy&#39;</span><span class="p">],</span>
                   <span class="n">my_classifier__min_samples_split</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">]</span>
@@ -3821,19 +3981,19 @@ Pipeline(steps=[(&apos;scale&apos;, MinMaxScaler(copy=True, feature_range=(0, 1)
 <span class="k">print</span><span class="p">(</span><span class="s2">&quot;The best parameters are </span><span class="si">%s</span><span class="s2"> with a score of </span><span class="si">%0.4f</span><span class="s2">&quot;</span>
       <span class="o">%</span> <span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">best_params_</span><span class="p">,</span> <span class="n">grid</span><span class="o">.</span><span class="n">best_score_</span><span class="p">))</span>
 
-<span class="c1"># The best parameters are {&#39;my_classifier__min_samples_split&#39;: 10, &#39;select_features__k&#39;: 19, &#39;my_classifier__criterion&#39;: &#39;entropy&#39;, &#39;my_classifier__max_features&#39;: None} with a score of 0.3578</span>
+<span class="c1"># The best parameters are {&#39;my_classifier__min_samples_split&#39;: 2, &#39;select_features__k&#39;: 17, &#39;my_classifier__criterion&#39;: &#39;gini&#39;, &#39;my_classifier__max_features&#39;: &#39;auto&#39;} with a score of 0.3857</span>
 
 <span class="n">dt_classifier</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">best_estimator_</span>
 
 <span class="n">test_classifier</span><span class="p">(</span><span class="n">dt_classifier</span><span class="p">,</span> <span class="n">my_dataset</span><span class="p">,</span> <span class="n">my_feature_list</span><span class="p">)</span>
 
 
-<span class="c1"># Pipeline(steps=[(&#39;scale&#39;, MinMaxScaler(copy=True, feature_range=(0, 1))), (&#39;select_features&#39;, SelectKBest(k=19, score_func=&lt;function f_classif at 0x119eeb0c8&gt;)), (&#39;my_classifier&#39;, DecisionTreeClassifier(class_weight=None, criterion=&#39;entropy&#39;, max_depth=None,</span>
-<span class="c1">#             max_features=None, max_leaf_nodes=None, min_samples_leaf=1,</span>
-<span class="c1">#             min_samples_split=10, min_weight_fraction_leaf=0.0,</span>
+<span class="c1"># Pipeline(steps=[(&#39;scale&#39;, MinMaxScaler(copy=True, feature_range=(0, 1))), (&#39;select_features&#39;, SelectKBest(k=17, score_func=&lt;function f_classif at 0x1140e0050&gt;)), (&#39;my_classifier&#39;, DecisionTreeClassifier(class_weight=None, criterion=&#39;gini&#39;, max_depth=None,</span>
+<span class="c1">#             max_features=&#39;auto&#39;, max_leaf_nodes=None, min_samples_leaf=1,</span>
+<span class="c1">#             min_samples_split=2, min_weight_fraction_leaf=0.0,</span>
 <span class="c1">#             presort=False, random_state=42, splitter=&#39;best&#39;))])</span>
-<span class="c1"># 	Accuracy: 0.85120	Precision: 0.42961	Recall: 0.35400	F1: 0.38816	F2: 0.36692</span>
-<span class="c1"># 	Total predictions: 15000	True positives:  708	False positives:  940	False negatives: 1292	True negatives: 12060</span>
+<span class="c1"># 	Accuracy: 0.84233	Precision: 0.40934	Recall: 0.41200	F1: 0.41067	F2: 0.41147</span>
+<span class="c1"># 	Total predictions: 15000	True positives:  824	False positives: 1189	False negatives: 1176	True negatives: 11811</span>
 </pre></div>
 
 </div>
@@ -3846,7 +4006,7 @@ Pipeline(steps=[(&apos;scale&apos;, MinMaxScaler(copy=True, feature_range=(0, 1)
 
 <div class="output_area"><div class="prompt"></div>
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>Fitting 1000 folds for each of 210 candidates, totalling 210000 fits
+<pre>Fitting 1000 folds for each of 660 candidates, totalling 660000 fits
 </pre>
 </div>
 </div>
@@ -3861,38 +4021,53 @@ Pipeline(steps=[(&apos;scale&apos;, MinMaxScaler(copy=True, feature_range=(0, 1)
   &apos;precision&apos;, &apos;predicted&apos;, average, warn_for)
 /Applications/anaconda/lib/python2.7/site-packages/sklearn/metrics/classification.py:1074: UndefinedMetricWarning: F-score is ill-defined and being set to 0.0 due to no predicted samples.
   &apos;precision&apos;, &apos;predicted&apos;, average, warn_for)
-[Parallel(n_jobs=4)]: Done 272 tasks      | elapsed:    2.3s
-[Parallel(n_jobs=4)]: Done 2072 tasks      | elapsed:   18.8s
-[Parallel(n_jobs=4)]: Done 5072 tasks      | elapsed:   40.8s
-[Parallel(n_jobs=4)]: Done 9272 tasks      | elapsed:  1.3min
-[Parallel(n_jobs=4)]: Done 14672 tasks      | elapsed:  2.1min
-[Parallel(n_jobs=4)]: Done 21272 tasks      | elapsed:  3.0min
-[Parallel(n_jobs=4)]: Done 29072 tasks      | elapsed:  4.0min
-[Parallel(n_jobs=4)]: Done 38072 tasks      | elapsed:  5.3min
-[Parallel(n_jobs=4)]: Done 48272 tasks      | elapsed:  6.5min
-[Parallel(n_jobs=4)]: Done 59672 tasks      | elapsed:  7.7min
-[Parallel(n_jobs=4)]: Done 72272 tasks      | elapsed:  9.2min
-[Parallel(n_jobs=4)]: Done 86072 tasks      | elapsed: 10.6min
-[Parallel(n_jobs=4)]: Done 101072 tasks      | elapsed: 12.1min
-[Parallel(n_jobs=4)]: Done 117272 tasks      | elapsed: 13.9min
-[Parallel(n_jobs=4)]: Done 134672 tasks      | elapsed: 16.1min
-[Parallel(n_jobs=4)]: Done 153272 tasks      | elapsed: 18.0min
-[Parallel(n_jobs=4)]: Done 173072 tasks      | elapsed: 20.0min
-[Parallel(n_jobs=4)]: Done 194072 tasks      | elapsed: 22.2min
-[Parallel(n_jobs=4)]: Done 210000 out of 210000 | elapsed: 23.8min finished
+[Parallel(n_jobs=4)]: Done 362 tasks      | elapsed:    2.9s
+[Parallel(n_jobs=4)]: Done 2162 tasks      | elapsed:   14.5s
+[Parallel(n_jobs=4)]: Done 5162 tasks      | elapsed:   31.8s
+[Parallel(n_jobs=4)]: Done 9362 tasks      | elapsed:   56.1s
+[Parallel(n_jobs=4)]: Done 14762 tasks      | elapsed:  1.5min
+[Parallel(n_jobs=4)]: Done 21362 tasks      | elapsed:  2.2min
+[Parallel(n_jobs=4)]: Done 29162 tasks      | elapsed:  3.1min
+[Parallel(n_jobs=4)]: Done 38162 tasks      | elapsed:  4.8min
+[Parallel(n_jobs=4)]: Done 48362 tasks      | elapsed:  6.8min
+[Parallel(n_jobs=4)]: Done 59762 tasks      | elapsed:  8.9min
+[Parallel(n_jobs=4)]: Done 72362 tasks      | elapsed: 11.2min
+[Parallel(n_jobs=4)]: Done 86162 tasks      | elapsed: 14.3min
+[Parallel(n_jobs=4)]: Done 101162 tasks      | elapsed: 17.3min
+[Parallel(n_jobs=4)]: Done 117362 tasks      | elapsed: 20.6min
+[Parallel(n_jobs=4)]: Done 134762 tasks      | elapsed: 23.9min
+[Parallel(n_jobs=4)]: Done 153362 tasks      | elapsed: 27.5min
+[Parallel(n_jobs=4)]: Done 173162 tasks      | elapsed: 31.5min
+[Parallel(n_jobs=4)]: Done 194162 tasks      | elapsed: 35.3min
+[Parallel(n_jobs=4)]: Done 216362 tasks      | elapsed: 39.1min
+[Parallel(n_jobs=4)]: Done 239762 tasks      | elapsed: 43.0min
+[Parallel(n_jobs=4)]: Done 264362 tasks      | elapsed: 46.9min
+[Parallel(n_jobs=4)]: Done 290162 tasks      | elapsed: 51.0min
+[Parallel(n_jobs=4)]: Done 317162 tasks      | elapsed: 55.2min
+[Parallel(n_jobs=4)]: Done 345362 tasks      | elapsed: 59.8min
+[Parallel(n_jobs=4)]: Done 374762 tasks      | elapsed: 64.5min
+[Parallel(n_jobs=4)]: Done 405362 tasks      | elapsed: 69.5min
+[Parallel(n_jobs=4)]: Done 437162 tasks      | elapsed: 74.9min
+[Parallel(n_jobs=4)]: Done 470162 tasks      | elapsed: 80.8min
+[Parallel(n_jobs=4)]: Done 504362 tasks      | elapsed: 86.4min
+[Parallel(n_jobs=4)]: Done 539762 tasks      | elapsed: 92.1min
+[Parallel(n_jobs=4)]: Done 576362 tasks      | elapsed: 98.3min
+[Parallel(n_jobs=4)]: Done 614162 tasks      | elapsed: 104.8min
+[Parallel(n_jobs=4)]: Done 653162 tasks      | elapsed: 110.7min
+[Parallel(n_jobs=4)]: Done 660000 out of 660000 | elapsed: 111.8min finished
 </pre>
 </div>
 </div>
 
 <div class="output_area"><div class="prompt"></div>
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>The best parameters are {&apos;my_classifier__min_samples_split&apos;: 2, &apos;select_features__k&apos;: 21, &apos;my_classifier__criterion&apos;: &apos;entropy&apos;, &apos;my_classifier__max_features&apos;: &apos;auto&apos;} with a score of 0.3587
-Pipeline(steps=[(&apos;scale&apos;, MinMaxScaler(copy=True, feature_range=(0, 1))), (&apos;select_features&apos;, SelectKBest(k=21, score_func=&lt;function f_classif at 0x115589e60&gt;)), (&apos;my_classifier&apos;, DecisionTreeClassifier(class_weight=None, criterion=&apos;entropy&apos;, max_depth=None,
-            max_features=&apos;auto&apos;, max_leaf_nodes=None, min_samples_leaf=1,
-            min_samples_split=2, min_weight_fraction_leaf=0.0,
+<pre>The best parameters are {&apos;my_classifier__min_samples_split&apos;: 3, &apos;select_features__k&apos;: 19, &apos;my_classifier__criterion&apos;: &apos;entropy&apos;, &apos;my_classifier__max_features&apos;: None} with a score of 0.3590
+Pipeline(steps=[(&apos;scale&apos;, MinMaxScaler(copy=True, feature_range=(0, 1))), (&apos;select_features&apos;, SelectKBest(k=19, score_func=&lt;function f_classif at 0x121232050&gt;)), (&apos;my_classifier&apos;, DecisionTreeClassifier(class_weight=None, criterion=&apos;entropy&apos;, max_depth=None,
+            max_features=None, max_leaf_nodes=None, min_samples_leaf=1,
+            min_samples_split=3, min_weight_fraction_leaf=0.0,
             presort=False, random_state=42, splitter=&apos;best&apos;))])
-	Accuracy: 0.84227	Precision: 0.40276	Recall: 0.37900	F1: 0.39052	F2: 0.38353
-	Total predictions: 15000	True positives:  758	False positives: 1124	False negatives: 1242	True negatives: 11876
+	Accuracy: 0.83553	Precision: 0.38272	Recall: 0.38100	F1: 0.38186	F2: 0.38134
+	Total predictions: 15000	True positives:  762	False positives: 1229	False negatives: 1238	True negatives: 11771
 
 </pre>
 </div>
